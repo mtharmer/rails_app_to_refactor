@@ -74,8 +74,10 @@ class TodosController < ApplicationController
       scope =
         if params[:todo_list_id].present?
           @todo_lists.find(params[:todo_list_id])
-        else
-          action_name == 'create' ? @todo_lists.default.first! : current_user
+        elsif action_name == 'create'
+          @todo_lists.default.first!
+        else 
+          current_user
         end
 
       @todos = scope.todos

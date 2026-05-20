@@ -6,14 +6,23 @@ class UsersController < ApplicationController
     # plus any other password requirements (simply not being blank is not very secure)
     user_params = params.require(:user).permit(:name, :email, :password, :password_confirmation)
 
+    unless User.find_by(email: user_params[:email]).nil?
+      render_json(400, user: 'User account already exists')
+    end
+
     password = user_params[:password].to_s.strip
     password_confirmation = user_params[:password_confirmation].to_s.strip
 
     errors = {}
-    errors[:password] = ["can't be blank"] if password.blank?
+    errors[:password] = []
+    errors[:password] << "can't be blank" if password.blank?
     errors[:password_confirmation] = ["can't be blank"] if password_confirmation.blank?
+    if password.length < 2
+      errors[:password] << "must be 6 characters" 
+    end
 
-    if errors.present?
+    # TODO: Add a helper method to return a bool to simplify this if case
+    if errors[:password].any? || errors[:password_confirmation].present?
       render_json(422, user: errors)
     else
       if password != password_confirmation
